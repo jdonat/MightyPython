@@ -144,9 +144,33 @@ def exo10():
    print(arr)
 
 def exo11():
-   
+   mon_tuple = (1, "chat", 3.14, True)
+   print(mon_tuple[1])
 
-menu = int(input("Entrez 1 pour l Exo 1\n2 pour l Exo 2\n3 pour l Exo 3\n4 pour l Exo 4\n5 pour l Exo 5\n6 pour l Exo 6\n7 pour l Exo 7\n8 pour l Exo 8\n9 pour l Exo 9\n10 pour l Exo 10\n"))
+def exo12():
+    #A tuple is a collection which is ordered and unchangeable
+    mon_tuple = (1, "chat", 3.14, True)
+    mon_tuple[2] = "python"
+
+def max_min_moy(tuple_t):
+   moy = min = max = 0
+   min = 60000
+   for x in tuple_t:
+      moy += x
+      if(x < min):
+         min = x
+      if(x > max):
+         max = x
+   moy = moy/len(tuple_t)
+   ret_tuple = (max, min, moy)
+   return ret_tuple
+
+def exo13():
+   test_tuple = (10, 20, 30, 40, 50)
+   print("Max, Min, Moyenne:", max_min_moy(test_tuple))
+
+
+menu = int(input("Entrez un chiffre pour acceder a l exercice (de 1 a 22)\n"))
 match menu:
    case 1:
       exo1()
@@ -170,6 +194,10 @@ match menu:
       exo10()
    case 11:
       exo11()
+   case 12:
+      exo12()
+   case 13:
+      exo13()
    case _:
       print("Erreur : Veuillez rentrer un chiffre compris entre 1 et 2\n")
 
