@@ -1,0 +1,57 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+
+  # Configuration de la machine "attaquant"
+  config.vm.define "attaquant" do |attaquant|
+    attaquant.vm.network "private_network", ip: "192.168.56.101"
+    attaquant.vm.hostname = "attaquant"
+    attaquant.vm.provision "shell", inline: <<-SHELL
+      yum install -y python3
+    SHELL
+  end
+
+  # Configuration de la machine "cible1"
+  config.vm.define "cible1" do |cible1|
+    cible1.vm.network "private_network", ip: "192.168.56.102"
+    cible1.vm.hostname = "cible1"
+    cible1.vm.provision "shell", inline: <<-SHELL
+      yum install -y python3
+      echo 'import socket' > /home/vagrant/send_data.py
+      echo 'import time' >> /home/vagrant/send_data.py
+      echo 'def send_data(host, port, duration, message):' >> /home/vagrant/send_data.py
+      echo '    end_time = time.time() + duration' >> /home/vagrant/send_data.py
+      echo '    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:' >> /home/vagrant/send_data.py
+      echo '        s.connect((host, port))' >> /home/vagrant/send_data.py
+      echo '        while time.time() < end_time:' >> /home/vagrant/send_data.py
+      echo '            s.sendall(message.encode())' >> /home/vagrant/send_data.py
+      echo '            time.sleep(1)' >> /home/vagrant/send_data.py
+      echo 'send_data("192.168.56.103", 12345, 600, "Hello cible2")' >> /home/vagrant/send_data.py
+    SHELL
+  end
+
+  # Configuration de la machine "cible2"
+  config.vm.define "cible2" do |cible2|
+    cible2.vm.network "private_network", ip: "192.168.56.103"
+    cible2.vm.hostname = "cible2"
+    cible2.vm.provision "shell", inline: <<-SHELL
+      yum install -y python3
+      echo 'import socket' > /home/vagrant/receive_data.py
+      echo 'def receive_data(port):' >> /home/vagrant/receive_data.py
+      echo '    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:' >> /home/vagrant/receive_data.py
+      echo '        s.bind(("", port))' >> /home/vagrant/receive_data.py
+      echo '        s.listen()' >> /home/vagrant/receive_data.py
+      echo '        conn, addr = s.accept()' >> /home/vagrant/receive_data.py
+      echo '        with conn:' >> /home/vagrant/receive_data.py
+      echo '            print(f"Connected to {addr}")' >> /home/vagrant/receive_data.py
+      echo '            while True:' >> /home/vagrant/receive_data.py
+      echo '                data = conn.recv(1024)' >> /home/vagrant/receive_data.py
+      echo '                if not data:' >> /home/vagrant/receive_data.py
+      echo '                    break' >> /home/vagrant/receive_data.py
+      echo '                print(f"Received: {data.decode()}")' >> /home/vagrant/receive_data.py
+      echo 'receive_data(12345)' >> /home/vagrant/receive_data.py
+    SHELL
+  end
+end
